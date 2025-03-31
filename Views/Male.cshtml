@@ -1,0 +1,28 @@
+﻿@model List<mvc.Models.Person> 
+
+<h2>Male Members</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Date of Birth</th>
+            <th>Phone Number</th>
+            <th>Birth Place</th>
+        </tr>
+    using mvc.Models;
+#line default
+<tbody>
+        @foreach (var member in Model)
+        {
+            <tr>
+                <td>@member.FirstName</td>
+                <td>@member.LastName</td>
+                <td>@member.DateOfBirth.ToShortDateString()</td>
+                <td>@member.PhoneNumber</td>
+                <td>@member.BirthPlace</td>
+            </tr>
+        }
+    </tbody>
+</table>
