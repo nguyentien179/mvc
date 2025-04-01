@@ -11,6 +11,7 @@ public class DummyData
         {
             new Person
             {
+                Id = 1,
                 FirstName = "John",
                 LastName = "Doe",
                 Gender = Gender.Male,
@@ -21,6 +22,7 @@ public class DummyData
             },
             new Person
             {
+                Id = 2,
                 FirstName = "Jane",
                 LastName = "Smith",
                 Gender = Gender.Female,
@@ -31,6 +33,7 @@ public class DummyData
             },
             new Person
             {
+                Id = 3,
                 FirstName = "Alex",
                 LastName = "Taylor",
                 Gender = Gender.Other,

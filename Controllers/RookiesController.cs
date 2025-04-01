@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using mvc.Interface;
 using mvc.Models;
 using mvc.Pages.Enums;
 using OfficeOpenXml;
@@ -9,57 +10,92 @@ namespace mvc.Controllers
     [Route("NashTech")]
     public class RookiesController : Controller
     {
-        private readonly List<Person> _members;
+        private IPersonService _personService;
 
-        public RookiesController()
+        public RookiesController(IPersonService personService)
         {
-            _members = DummyData.GetPeople();
+            _personService = personService;
         }
 
-        [Route("Males")]
-        public IActionResult Males()
+        public IActionResult Members([FromQuery] string filter)
         {
-            var maleMembers = _members.Where(m => m.Gender == Gender.Male).ToList();
-            // return View(maleMembers);
-            return Json(maleMembers);
-        }
-
-        [Route("Oldest")]
-        public IActionResult Oldest()
-        {
-            var oldestMember = _members.OrderByDescending(m => m.DateOfBirth).LastOrDefault();
-            // return View(oldestMember);
-            return Json(oldestMember);
-        }
-
-        [Route("FullNames")]
-        public IActionResult FullNames()
-        {
-            var fullNames = _members.Select(m => $"{m.LastName} {m.FirstName}").ToList();
-            // return View(fullNames);
-            return Json(fullNames);
-        }
-
-        [Route("BirthYearFilter")]
-        public IActionResult BirthYearFilter([FromQuery] string action)
-        {
-            Console.WriteLine($"Received action: '{action}'");
-            List<Person> filteredMembers = action switch
+            var members = _personService.GetAll().ToList();
+            switch (filter)
             {
-                "equals2000" => _members.Where(m => m.DateOfBirth.Year == 2000).ToList(),
-                "greaterthan2000" => _members.Where(m => m.DateOfBirth.Year > 2000).ToList(),
-                "lessthan2000" => _members.Where(m => m.DateOfBirth.Year < 2000).ToList(),
-                _ => new List<Person>(),
-            };
+                case "males":
+                    members = members.Where(m => m.Gender == Gender.Male).ToList();
+                    break;
+                case "oldest":
+                    var oldestMember = members.OrderBy(m => m.DateOfBirth).FirstOrDefault();
+                    members =
+                        oldestMember != null
+                            ? new List<Person>
+                            {
+                                new Person
+                                {
+                                    FirstName = oldestMember.FirstName,
+                                    LastName = oldestMember.LastName,
+                                    Gender = oldestMember.Gender,
+                                    DateOfBirth = oldestMember.DateOfBirth,
+                                    PhoneNumber = oldestMember.PhoneNumber,
+                                    BirthPlace = oldestMember.BirthPlace,
+                                    IsGraduated = oldestMember.IsGraduated,
+                                },
+                            }
+                            : new List<Person>();
+                    break;
+                case "equals2000":
+                    members = members.Where(m => m.DateOfBirth.Year == 2000).ToList();
+                    break;
+                case "greaterthan2000":
+                    members = members.Where(m => m.DateOfBirth.Year > 2000).ToList();
+                    break;
+                case "lessthan2000":
+                    members = members.Where(m => m.DateOfBirth.Year < 2000).ToList();
+                    break;
+                default:
+                    break;
+            }
+            return View(members);
+        }
 
-            // return View(filteredMembers);
-            Console.WriteLine($"Action: {action}, Members Found: {filteredMembers.Count}");
-            return Json(filteredMembers);
+        public IActionResult MemberDetails(int id)
+        {
+            var person = _personService.GetAll().FirstOrDefault(p => p.Id == id);
+            if (person == null)
+            {
+                return NotFound("Member not found");
+            }
+            return View(person);
+        }
+
+        public IActionResult Create(Person person)
+        {
+            _personService.ValidatePerson(person);
+            _personService.Create(person);
+            return RedirectToAction("Members");
+        }
+
+        public IActionResult Edit(Person person)
+        {
+            if (ModelState.IsValid)
+            {
+                _personService.Update(person);
+                return RedirectToAction("Index");
+            }
+            return View(person);
+        }
+
+        public IActionResult Delete(int id)
+        {
+            _personService.Delete(id);
+            return RedirectToAction("Members");
         }
 
         [Route("Excel")]
         public IActionResult ExportToExcel()
         {
+            var members = _personService.GetAll().ToList();
             ExcelPackage.License.SetNonCommercialPersonal("Tien");
 
             using (var package = new ExcelPackage())
@@ -75,7 +111,7 @@ namespace mvc.Controllers
                 worksheet.Cells[1, 7].Value = "Is Graduated";
 
                 int row = 2;
-                foreach (var member in _members)
+                foreach (var member in members)
                 {
                     worksheet.Cells[row, 1].Value = member.FirstName;
                     worksheet.Cells[row, 2].Value = member.LastName;

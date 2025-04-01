@@ -1,10 +1,6 @@
 {
   "Files": [
     {
-      "Id": "D:\\dotnet projects\\mvc\\obj\\Debug\\net9.0\\scopedcss\\projectbundle\\mvc.bundle.scp.css",
-      "PackagePath": "staticwebassets\\mvc.1gjbf7csm5.bundle.scp.css"
-    },
-    {
       "Id": "D:\\dotnet projects\\mvc\\wwwroot\\css\\site.css",
       "PackagePath": "staticwebassets\\css\\site.css"
     },
