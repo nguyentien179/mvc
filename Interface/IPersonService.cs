@@ -9,5 +9,4 @@ public interface IPersonService
     void Update(Person person);
     void Delete(int id);
     List<Person> GetAll();
-    void ValidatePerson(Person person);
 }
